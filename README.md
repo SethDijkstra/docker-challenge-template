@@ -1,126 +1,140 @@
-Docker Challenge Template
-CHALLENGE ONE: Steps to Serve Static Pages with Docker and NGINX
-Step 1
-Create an index.html file in the public folder within the challenge1 directory. This file displays my name and ID.
+# Docker Challenge Template
 
-Step 2
-Create a Dockerfile in the root directory of the challenge1 folder.
+This template guides you through the steps for completing two Docker challenges: serving static pages with NGINX and containerizing a NodeJS application.
 
-Step 3
-Use the NGINX image from Docker Hub in the Dockerfile.
+## CHALLENGE ONE
 
-Dockerfile
-Copy code
-FROM nginx:alpine
-Step 4
-Copy the contents of the public folder to the directory where NGINX serves its pages. Add into the Dockerfile this code after completing step 3:
+Serve static pages using Docker and NGINX.
 
-Dockerfile
-Copy code
-COPY public /usr/share/nginx/html
-Step 5
-Expose port 80 in the Dockerfile. Next in the Dockerfile add this code:
+### Steps
 
-Dockerfile
-Copy code
-EXPOSE 80
-Step 6
-Start NGINX and keep it running in the foreground. Lastly in the Dockerfile add this code:
+1. **Prepare the HTML file**  
+   Create an `index.html` file in the `public` folder within the `challenge1` directory. This file should display your name and ID.
 
-Dockerfile
-Copy code
-CMD ["nginx", "-g", "daemon off;"]
-Step 7
-Navigate to the folder directory in the terminal.
+2. **Create a Dockerfile**  
+   In the root directory of the `challenge1` folder, create a `Dockerfile`.
 
-Step 8
-Build the Docker image with the following command (Replace 'webserver-image:v1' with whatever you want to name your image):
+3. **Specify the NGINX Image**  
+   In your `Dockerfile`, use the NGINX image from Docker Hub.
 
-bash
-Copy code
-docker build -t webserver-image:v1 .
-Step 9
-Run the image with the following command (my-webserver is what I name my container):
+    ```Dockerfile
+    FROM nginx:alpine
+    ```
 
-bash
-Copy code
-docker run -d -p 8080:80 --name my-webserver webserver-image:v1
-Step 10
-Take screenshots of both the site being served and it running in Docker. Place screenshots in the folder directory.
+4. **Copy Static Content**  
+   Copy the contents of the `public` folder to the directory where NGINX serves its pages. Add the following line to your `Dockerfile`:
 
-CHALLENGE TWO: Steps to Containerize and Serve a NodeJS Application with Docker and NGINX
-Step 1
-Start with the challenge2 folder, already containing package-lock.json, package.json, and server.js for our simple NodeJS application.
+    ```Dockerfile
+    COPY public /usr/share/nginx/html
+    ```
 
-Step 2
-Create a Dockerfile in the challenge2 directory to build our NodeJS application's Docker container. Dockerfile should look like this:
+5. **Expose Port 80**  
+   Expose port 80 in your `Dockerfile` by adding:
 
-Dockerfile
-Copy code
-FROM node:14
+    ```Dockerfile
+    EXPOSE 80
+    ```
 
-WORKDIR /app
+6. **Start NGINX**  
+   Ensure NGINX stays running in the foreground by adding:
 
-COPY package.json package-lock.json /app/
+    ```Dockerfile
+    CMD ["nginx", "-g", "daemon off;"]
+    ```
 
-RUN npm install
+7. **Build the Docker Image**  
+   Navigate to the folder directory in the terminal and build your Docker image:
 
-COPY . /app
+    ```bash
+    docker build -t webserver-image:v1 .
+    ```
 
-EXPOSE 3000
+    Replace `webserver-image:v1` with your preferred image name.
 
-CMD ["node", "server.js"]
-Step 3
-Create a docker-compose.yml file in the same directory to orchestrate the web server and the application.
+8. **Run the Docker Container**  
+   Run the image as a container:
 
-yaml
-Copy code
-version: '3'
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-  nginx:
-    image: nginx:alpine
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - "8000:80"
-    depends_on:
-      - app
-Step 4
-Create an nginx.conf file for NGINX to listen on port 8000 and forward requests to the NodeJS application.
+    ```bash
+    docker run -d -p 8080:80 --name my-webserver webserver-image:v1
+    ```
 
-nginx
-Copy code
-events {}
+    Replace `my-webserver` with your preferred container name.
 
-http {
-    server {
-        listen 80;
+9. **Verification**  
+   Take screenshots of both the site being served and the container running in Docker. Place these screenshots in the folder directory.
 
-        location /api/ {
-            proxy_pass http://app:3000/api/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_cache_bypass $http_upgrade;
+## CHALLENGE TWO
+
+Containerize and serve a NodeJS application using Docker and NGINX.
+
+### Steps
+
+1. **Prepare Your Application**  
+   Use the `challenge2` folder, which contains `package-lock.json`, `package.json`, and `server.js` for a simple NodeJS application.
+
+2. **Create a Dockerfile**  
+   In the `challenge2` directory, create a `Dockerfile` with the following content:
+
+    ```Dockerfile
+    FROM node:14
+    WORKDIR /app
+    COPY package.json package-lock.json /app/
+    RUN npm install
+    COPY . /app
+    EXPOSE 3000
+    CMD ["node", "server.js"]
+    ```
+
+3. **Docker Compose**  
+   Create a `docker-compose.yml` file in the same directory:
+
+    ```yaml
+    version: '3'
+    services:
+      app:
+        build: .
+        ports:
+          - "3000:3000"
+      nginx:
+        image: nginx:alpine
+        volumes:
+          - ./nginx.conf:/etc/nginx/nginx.conf
+        ports:
+          - "8000:80"
+        depends_on:
+          - app
+    ```
+
+4. **Configure NGINX**  
+   Create an `nginx.conf` file for NGINX to listen on port 8000 and forward requests to the NodeJS application:
+
+    ```nginx
+    events {}
+    http {
+        server {
+            listen 80;
+            location /api/ {
+                proxy_pass http://app:3000/api/;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+            }
         }
     }
-}
-Step 5
-Navigate to the challenge2 directory in the terminal.
+    ```
 
-Step 6
-Enter the command to build and run the Docker containers:
+5. **Build and Run Containers**  
+   In the `challenge2` directory, build and run the Docker containers:
 
-bash
-Copy code
-docker-compose up --build
-Step 7
-After confirming all services were running properly, open a browser and point it to "http://localhost:8000/api/books" to see a JSON message with all books.
+    ```bash
+    docker-compose up --build
+    ```
 
-Step 8
-Take screenshots of the running server in Docker, the page being served (http://localhost:8000/api/books), and the Docker Compose logs for submission.
+6. **Access the Application**  
+   Open a browser and navigate to "http://localhost:8000/api/books" to view a JSON message with all books.
+   Then open a browser and navigate to "http://localhost:8000/api/books/1" to view a JSON message with the first book.
+
+7. **Verification**  
+   Take screenshots of the running server in Docker, the page being served, and the Docker Compose logs for submission.
